@@ -1,6 +1,8 @@
 terraform {
   required_version = ">= 1.5"
-  backend "s3" {}
+  backend "local" {
+   path = "/home/denis/Work/terraform-task\terraform.tfstate"
+   }
   required_providers {
     aws = {
       source  = "hashicorp/aws"
@@ -33,6 +35,27 @@ module "vpc" {
   tags = {
     Terraform   = "true"
     Environment = "demo"
+  }
+}
+
+resource "aws_security_group" "lb_public_access" {
+  name   = "lb-public-access"
+  vpc_id = module.vpc.vpc_id
+
+  ingress {
+    from_port = 80
+    to_port   = 80
+    protocol  = "tcp"
+    cidr_blocks = [
+      "0.0.0.0/0"
+    ]
+  }
+
+  egress {
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = module.vpc.private_subnets_cidr_blocks
   }
 }
 
